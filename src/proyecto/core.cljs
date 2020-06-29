@@ -3,6 +3,9 @@
             [reagent.dom :as rd]
             ["framer-motion" :as framer :refer [motion]]))
 
+(def play-audio false)
+(defn dialog-bleep [] (when (true? play-audio)
+                        (.play (js/Audio "/assets/audio.wav"))))
 (defn item [props]
   (let [{:keys [icon
                 icon-fn
@@ -33,11 +36,13 @@
       (swap! #(update-in %1 [:dialog] merge %2) props)))
 
 (defn put! [k v]
-  (swap! p-state assoc k v))
-
+  (swap! p-state assoc-in k v))
+(defn change! [k v]
+  (swap! p-state update-in k v))
 
   (defn dialog-event [props]
     (let [stay (dialog-state :go-to)
+          old-id (dialog-state :k)
           {:keys [id go?]} props]
       (if (and (false? (dialog-state :started?))
                (false? (dialog-state :play?)))
@@ -47,7 +52,7 @@
                  :play? true
                  :index 0
                  :cursor 1
-                 :k id})
+                 :k (if (nil? id) old-id id)})
         (do (merge! {:rejected true})
             (js/setTimeout #(merge! {:rejected false}) 600)))))
 
@@ -57,7 +62,7 @@
              :cont-style nil
              :cont-text "Ideas~"
              :cont-extra nil
-             :click-fn #(dialog-event {:id :ideas 
+             :click-fn #(dialog-event {:id :ideas
                                        :go? true})
              :hover-fn nil
              :dialog ["le diste clih a la carpeteeeta"
@@ -68,7 +73,7 @@
               :cont-style "border-2 border-black rounded-lg bg-white"
               :cont-text "Corpus"
               :cont-extra {:whileHover {:scale 1.3}}
-              :click-fn nil
+              :click-fn #(change! [:counter] inc)
               :hover-fn #(dialog-event {:id :corpus
                                         :go? false})
               :dialog ["como una jaula de carne"
@@ -83,7 +88,9 @@
                :click-fn nil
                :hover-fn #(dialog-event {:id :persona
                                          :go? false})
-               :dialog ["tengo una makarita mas carita" "je jEEeeeEEeeh"]}})
+               :dialog ["tengo una makarita mas carita" "je jEEeeeEEeeh"]}
+
+     :counter-3 {:dialog ["Deja de hinchar con el clih carajo" "je" "cara de pito"]}})
 
 (let [grid-style
       "p-4 border-2 items-center justify-center  
@@ -101,45 +108,43 @@
           ^{:key i} [:div (nth files i)])
         [:div (first files)])]]))
 
-(def play-audio false)
-(defn dialog-bleep [] (when (true? play-audio)
-                        (.play (js/Audio "/assets/audio.wav"))))
-
-(defn read-text [ms started? play? index cursor text-list text]
 
 
-  (cond (and (< cursor (count text))
-             (true? started?)
-             (true? play?))
-        (do
-          (when (= cursor 1) (dialog-bleep))
-          (merge! {:play? true})
-          (js/console.log cursor)
+ (defn read-text [ms started? play? index cursor text-list text]
 
-          (js/setTimeout
-           #(do (when (not (= " " (nth text cursor)))
-                  (dialog-bleep))
-                (swap! p-state update-in
-                       [:dialog :cursor] inc)) ms))
 
-        (= index (dec (count text-list)))
-        (merge! {:started? false
-                 :play? false})
-        (>= cursor (count text))
-        (merge! {:play? false})))
+     (cond (and (< cursor (count text))
+                (true? started?)
+                (true? play?))
+           (do
+             (when (= cursor 1) (dialog-bleep))
+             (merge! {:play? true})
 
-(defn next-button [index text-list play?] [:button
-                                           {:class "w-10 h-10 mt-2
+             (js/setTimeout
+              #(do (when (not (= " " (nth text cursor)))
+                     (dialog-bleep))
+                   (swap! p-state update-in
+                          [:dialog :cursor] inc)) ms))
+
+           (= index (dec (count text-list)))
+             (merge! {:started? false
+                      :play? false})
+           (>= cursor (count text))
+           (merge! {:play? false})))
+
+(defn next-button [index text-list play?]
+  [:button
+   {:class "w-10 h-10
                bg-black text-white
                rounded-md
                font-black
                border-none"
-                                            :on-click #(when (and (< index (dec (count text-list))) (false? play?))
-                                                         (merge! {:index (inc (dialog-state :index))
-                                                                  :cursor 1
-                                                                  :play? true}))}
+    :on-click #(when (and (< index (dec (count text-list))) (false? play?))
+                 (merge! {:index (inc (dialog-state :index))
+                          :cursor 1
+                          :play? true}))}
 
-                                           ">"])
+   ">"])
 
 (defn dialog-box []
   (let [ms 30
@@ -172,7 +177,12 @@
      [:p {:class "mt-2 p-2 border-2 border-black"}
       (take cursor text)]
 
-     (next-button index text-list play?)]))
+     [:div {:class "mt-2 flex flex-col justify-center items-center"}
+      (next-button index text-list play?)
+      [:div {:class "mt-2 p-2 border-2 
+                    rounded-md border-black  
+                    bg-red-200 text-center  font-bold"} (get @p-state :counter)]]
+     ]))
 
 (let [itm #(item (get proto %))
       ideas (itm :ideas)
@@ -183,11 +193,23 @@
       to-ideas [corpus corpus persona ideas]]
   
   (defn main []
-  ;; (get-in proto [(dialog-state :go-to) :go-to])
-    [:div proto
+    
+    (cond (< 2 (get @p-state :counter)) (do (dialog-event {:id :counter-3})
+                                            (put! [:counter] 0)))
+    [:div
+     [:div {:class "flex justify-center 
+                    items-center fixed
+                    h-full w-full 
+                    p-2" }
+      [:img {:class "rounded-md bg-gray-100 
+                     sm:max-w-xl max-h-screen"
+             :src "assets/corpus.png"}]]
      (grid (cond (= (dialog-state :go-to) :default) to-default
                  (= (dialog-state :go-to) :ideas) to-ideas))
-     (dialog-box)]))
+
+    ;;  (dialog-box)
+     ]))
+
 
 (defn prueba [] (js/console.log ["key->" (dialog-state :k) "go->" (dialog-state :go-to)]))
 (defn start []
