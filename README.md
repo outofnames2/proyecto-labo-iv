@@ -8,6 +8,20 @@ yarn install
 yarn watch
 ```
 
+## Generar css (dev y release)
+``` shell
+yarn tw-dev
+
+yarn tw-prod
+
+```
+
+## Re-generar css onchange (dev y release)
+``` shell
+yarn watch:dev
+
+yarn watch:prod
+```
 ## Borrar tooh
 
 ``` shell
