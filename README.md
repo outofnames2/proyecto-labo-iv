@@ -1,6 +1,6 @@
-# {{name}}
+# Un Trabajo por Hacer
 
-## Run
+## Dependencias/Correr la pagina
 
 ``` shell
 yarn install
@@ -8,13 +8,13 @@ yarn install
 yarn watch
 ```
 
-## Clean
+## Borrar tooh
 
 ``` shell
 yarn clean
 ```
 
-## Release
+## Release-build
 
 ``` shell
 yarn release
