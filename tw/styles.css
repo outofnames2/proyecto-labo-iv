@@ -1,0 +1,10 @@
+/* purgecss start ignore */ 
+@tailwind base;
+
+@tailwind components;
+
+body {
+    @apply .bg-red-400; 
+}
+/* purgecss end ignore */
+@tailwind utilities;
