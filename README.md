@@ -1,6 +1,6 @@
-# {{name}}
+# Un Trabajo por Hacer
 
-## Run
+## Dependencias/Correr la pagina
 
 ``` shell
 yarn install
@@ -8,13 +8,27 @@ yarn install
 yarn watch
 ```
 
-## Clean
+## Generar css (dev y release)
+``` shell
+yarn tw-dev
+
+yarn tw-prod
+
+```
+
+## Re-generar css onchange (dev y release)
+``` shell
+yarn watch:dev
+
+yarn watch:prod
+```
+## Borrar tooh
 
 ``` shell
 yarn clean
 ```
 
-## Release
+## Release-build
 
 ``` shell
 yarn release
