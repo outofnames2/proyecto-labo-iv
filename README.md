@@ -10,9 +10,9 @@ yarn watch
 
 ## Generar css (dev y release)
 ``` shell
-yarn tw-dev
+yarn dev-tw
 
-yarn tw-prod
+yarn prod-tw
 
 ```
 
